@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="util-cache"
+         xsi:noNamespaceSchemaLocation="ehcache.xsd">
+
+    <diskStore path="java.io.tmpdir"/>
+
+    <terracottaConfig url="${terracotta.config.url}"/>
+
+    <defaultCache
+            maxEntriesLocalHeap="0"
+            eternal="false"
+            timeToIdleSeconds="1200"
+            timeToLiveSeconds="1200">
+        <terracotta/>
+    </defaultCache>
+
+    <cache name="byteCache"
+           maxEntriesLocalHeap="10000"
+           maxEntriesInCache="10000"
+           timeToIdleSeconds="180"
+           timeToLiveSeconds="180"
+           maxBytesLocalOffHeap="15M"
+            >
+        <terracotta/>
+    </cache>
+
+    <cache name="stringCache"
+           maxEntriesLocalHeap="10000"
+           maxEntriesInCache="10000"
+           timeToIdleSeconds="180"
+           timeToLiveSeconds="180"
+           maxBytesLocalOffHeap="15M"
+            >
+        <terracotta/>
+    </cache>
+
+</ehcache>
