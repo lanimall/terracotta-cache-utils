@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="ehcache.xsd"
+         updateCheck="true" monitoring="autodetect"
+         dynamicConfig="true" name="PingTestCache" >
+
+    <!--
+    Mandatory Default Cache configuration. These settings will be applied to caches
+    created programmatically using CacheManager.add(String cacheName).
+
+    The defaultCache has an implicit name "default" which is a reserved cache name.
+    -->
+    <defaultCache
+           maxElementsInMemory="0"
+           eternal="false"
+           overflowToDisk="true"
+           timeToIdleSeconds="1200"
+           timeToLiveSeconds="1200">
+    </defaultCache>
+
+    <cache name="terracottaPing" eternal="true" maxEntriesLocalHeap="1000000">
+        <terracotta/>
+    </cache>
+
+    <terracottaConfig url="${tc.connect.servers}"/>
+</ehcache>

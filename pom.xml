@@ -1,0 +1,297 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.sf.ehcache</groupId>
+    <artifactId>ehcache-tools</artifactId>
+    <version>1.0.0</version>
+    <name>EhCache tools</name>
+    <description>Ehcache tools</description>
+
+    <licenses>
+        <license>
+            <name>Terracotta Public License</name>
+            <url>http://www.terracotta.org/license.txt</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <junit.version>4.11</junit.version>
+        <slf4j.version>1.7.1</slf4j.version>
+        <appassembler.program.tcping.tc.license>${user.home}/terracotta-license.key</appassembler.program.tcping.tc.license>
+        <appassembler.program.tcping.tc.url>tcvm:9510</appassembler.program.tcping.tc.url>
+    </properties>
+
+    <developers>
+        <developer>
+            <id>gbshiva</id>
+            <name>Shivakumar Gokaram</name>
+            <email>sgokaram@terracottatech.com</email>
+            <url>http://www.terracotta.org</url>
+            <organization>Terracotta, Inc.</organization>
+            <organizationUrl>http://www.terracotta.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+        <developer>
+            <id>fsanglie</id>
+            <name>Fabien Sanglier</name>
+            <email>fsanglie@terracottatech.com</email>
+            <url>http://www.terracotta.org</url>
+            <organization>Terracotta, Inc.</organization>
+            <organizationUrl>http://www.terracotta.org</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.lexicalscope.jewelcli</groupId>
+            <artifactId>jewelcli</artifactId>
+            <version>0.8.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+
+        <!-- SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- <resources> <resource> <directory>src/main/resources</directory> <filtering>true</filtering>
+            <includes> <include>**/*</include> </includes> </resource> </resources> -->
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.1</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.9</version>
+                <configuration>
+                    <platforms><platform>all</platform></platforms>
+                    <configurationDirectory>config</configurationDirectory>
+                    <configurationSourceDirectory>${basedir}/resources</configurationSourceDirectory>
+                    <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                    <includeConfigurationDirectoryInClasspath>true</includeConfigurationDirectoryInClasspath>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <useWildcardClassPath>true</useWildcardClassPath>
+
+                    <!-- Default Extra JVM arguments if not defined at the program level -->
+                    <extraJvmArguments>-Xms64m -Xmx256m -XX:MaxDirectMemorySize=10G</extraJvmArguments>
+                    <programs>
+                        <program>
+                            <mainClass>com.terracotta.tools.tcPing</mainClass>
+                            <name>TerracottaHealthCheck_Step1</name>
+                            <commandLineArguments>
+                                <commandLineArgument>1 ${maven.build.timestamp} 10000</commandLineArgument>
+                            </commandLineArguments>
+                            <jvmSettings>
+                                <initialMemorySize>64m</initialMemorySize>
+                                <maxMemorySize>128m</maxMemorySize>
+                                <extraArguments>
+                                    <extraArgument>-XX:MaxDirectMemorySize=10G</extraArgument>
+                                    <extraArgument>-Dcom.tc.productkey.path=${appassembler.program.tcping.tc.license}</extraArgument>
+                                    <extraArgument>-Dtc.connect.servers=${appassembler.program.tcping.tc.url}</extraArgument>
+                                    <extraArgument>-Dehcache.config.path=classpath:ehcache-ping.xml</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </program>
+                        <program>
+                            <mainClass>com.terracotta.tools.tcPing</mainClass>
+                            <name>TerracottaHealthCheck_Step2</name>
+                            <commandLineArguments>
+                                <commandLineArgument>2 ${maven.build.timestamp} 10000</commandLineArgument>
+                            </commandLineArguments>
+                            <jvmSettings>
+                                <initialMemorySize>64m</initialMemorySize>
+                                <maxMemorySize>128m</maxMemorySize>
+                                <extraArguments>
+                                    <extraArgument>-XX:MaxDirectMemorySize=10G</extraArgument>
+                                    <extraArgument>-Dcom.tc.productkey.path=${appassembler.program.tcping.tc.license}</extraArgument>
+                                    <extraArgument>-Dtc.connect.servers=${appassembler.program.tcping.tc.url}</extraArgument>
+                                    <extraArgument>-Dehcache.config.path=classpath:ehcache-ping.xml</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </program>
+                        <program>
+                            <mainClass>com.terracotta.tools.cacheSize</mainClass>
+                            <name>PrintCacheSize</name>
+                            <jvmSettings>
+                                <initialMemorySize>64m</initialMemorySize>
+                                <maxMemorySize>128m</maxMemorySize>
+                                <extraArguments>
+                                    <extraArgument>-Dehcache.config.path=some-custom-ehcache.xml</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </program>
+                        <program>
+                            <mainClass>com.terracotta.tools.cacheClear</mainClass>
+                            <name>ClearCacheEntries</name>
+                            <jvmSettings>
+                                <initialMemorySize>64m</initialMemorySize>
+                                <maxMemorySize>128m</maxMemorySize>
+                                <extraArguments>
+                                    <extraArgument>-Dehcache.config.path=some-custom-ehcache.xml</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </program>
+                        <program>
+                            <mainClass>com.terracotta.tools.cachePrint</mainClass>
+                            <name>PrintCacheEntries</name>
+                            <jvmSettings>
+                                <initialMemorySize>64m</initialMemorySize>
+                                <maxMemorySize>128m</maxMemorySize>
+                                <extraArguments>
+                                    <extraArgument>-Dehcache.config.path=some-custom-ehcache.xml</extraArgument>
+                                </extraArguments>
+                            </jvmSettings>
+                        </program>
+                    </programs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptor>src/assembly/bin.xml</descriptor>
+                    <finalName>ehcache-tools</finalName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>ehcache-2.6</id>
+            <properties>
+                <ehcache-core-ee.version>2.6.8</ehcache-core-ee.version>
+                <ehcache-terracotta-ee.version>2.6.8</ehcache-terracotta-ee.version>
+            </properties>
+            <dependencies>
+                <!-- EhCache -->
+                <dependency>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache-core-ee</artifactId>
+                    <version>${ehcache-core-ee.version}</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache-terracotta-ee</artifactId>
+                    <version>${ehcache-terracotta-ee.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>ehcache-2.7</id>
+            <properties>
+                <ehcache-ee.version>2.7.6</ehcache-ee.version>
+                <toolkit.version>4.0.6</toolkit.version>
+            </properties>
+            <dependencies>
+                <!-- EhCache -->
+                <dependency>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache-ee</artifactId>
+                    <version>${ehcache-ee.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.terracotta</groupId>
+                    <artifactId>terracotta-toolkit-runtime-ee</artifactId>
+                    <version>${toolkit.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>ehcache-2.8</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <ehcache-ee.version>2.8.3</ehcache-ee.version>
+                <toolkit.version>4.1.3</toolkit.version>
+            </properties>
+            <dependencies>
+                <!-- EhCache -->
+                <dependency>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache-ee</artifactId>
+                    <version>${ehcache-ee.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.terracotta</groupId>
+                    <artifactId>terracotta-toolkit-runtime-ee</artifactId>
+                    <version>${toolkit.version}</version>
+                    <scope>compile</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+    <repositories>
+        <repository>
+            <id>terracotta-snapshots</id>
+            <url>http://www.terracotta.org/download/reflector/snapshots</url>
+        </repository>
+        <repository>
+            <id>terracotta-releases</id>
+            <url>http://www.terracotta.org/download/reflector/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+</project>
