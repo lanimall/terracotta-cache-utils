@@ -7,6 +7,7 @@ import com.lexicalscope.jewel.cli.Option;
 import com.terracotta.tools.utils.*;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
+import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.pool.sizeof.SizeOf;
 import net.sf.ehcache.pool.sizeof.filter.PassThroughFilter;
@@ -28,6 +29,7 @@ public class cacheInspect {
     private final AppParams runParams;
     private final ExecutorService cacheFetchService;
     //private final ExecutorService cacheGetService;
+    private CacheManager cacheManager;
 
     //agent (DEFAULT), reflection, unsafe
     private final SizeOf sizeOf;
@@ -76,10 +78,14 @@ public class cacheInspect {
 
     public void run() {
         String[] cname;
+        log.info("Attempting to get CacheManager instance...");
+        cacheManager = CacheFactory.getInstance().getCacheManager();
+        log.info("Successfully created CacheManager '" + cacheManager.getName() + "'.");
         if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheNamesCSV())) {
-            System.out.println("Requested to get size for all caches...");
-            cname = CacheFactory.getInstance().getCacheManager().getCacheNames();
+            log.info("Getting sizes for all caches...");
+            cname = cacheManager.getCacheNames();
         } else {
+            log.info("Getting sizes for specified caches...");
             cname = runParams.getCacheNames();
         }
 
@@ -91,39 +97,30 @@ public class cacheInspect {
     }
 
     public void postRun() {
-        CacheFactory.getInstance().getCacheManager().shutdown();
+        cacheManager.shutdown();
     }
 
     private void findThreadingObjectSizesInCache(String[] cacheNames) {
-        Future<Map<CacheStatsDefinition, CacheSizeStats>> futs[] = new Future[runParams.getCacheNames().length];
-        int cacheCount = 0;
+        Future<Map<CacheStatsDefinition, CacheSizeStats>> futs[] = new Future[cacheNames.length];
+        int taskCount = 0;
 
         for (String cacheName : cacheNames) {
-            Cache myCache = CacheFactory.getInstance().getCache(cacheName);
-            futs[cacheCount] = cacheFetchService.submit(new CacheFetchOp(myCache));
-            cacheCount++;
+            log.info("Creating Cache instance for cache '" + cacheName + "'");
+            Cache myCache = cacheManager.getCache(cacheName);
+            log.info("Submitting CacheFetchOp for cache '" + cacheName + "'");
+            futs[taskCount] = cacheFetchService.submit(new CacheFetchOp(myCache));
+            taskCount++;
         }
 
-        for (int i = 0; i < cacheCount; i++) {
+        for (int i = 0; i < taskCount; i++) {
             try {
-                while (!futs[i].isDone()) {
-                    System.out.print(".");
-                    Thread.sleep(5000);
-                }
-
-                Map<CacheStatsDefinition, CacheSizeStats> cacheStats = futs[i].get();
-                if (null != cacheStats) {
-                    for (CacheStatsDefinition statsDef : cacheStats.keySet()) {
-                        CacheSizeStats stats = cacheStats.get(statsDef);
-
-                        System.out.println(statsDef.toString() + " " + ((null != stats) ? stats.toString() : "null"));
-                    }
-                }
-                System.out.println("");
-            } catch (InterruptedException e) {
-                log.error("", e);
-            } catch (ExecutionException e) {
-                log.error("", e);
+                Map<CacheStatsDefinition, CacheSizeStats> cacheStats = futs[i].get(
+                        runParams.getTaskTimeoutMillis(), TimeUnit.MILLISECONDS);
+                printCacheStats(cacheStats);
+            } catch (TimeoutException e) {
+                log.error("Operation timed out while determining size for cache '" + cacheNames[i] + "'.", e);
+            } catch (Exception e) {
+                log.error("An error occurred while determining size for cache '" + cacheNames[i] + "'.", e);
             }
         }
     }
@@ -132,19 +129,21 @@ public class cacheInspect {
 
         Map<CacheStatsDefinition, CacheSizeStats> cacheStats = null;
         for (String cacheName : cacheNames) {
-            Cache myCache = CacheFactory.getInstance().getCache(cacheName);
+            Cache myCache = cacheManager.getCache(cacheName);
             cacheStats = new CacheFetchOp(myCache).call();
-
-            if (null != cacheStats) {
-                for (CacheStatsDefinition statsDef : cacheStats.keySet()) {
-                    CacheSizeStats stats = cacheStats.get(statsDef);
-
-                    System.out.println(statsDef.toString() + " " + ((null != stats) ? stats.toString() : "null"));
-                }
-            }
-            System.out.println("");
+            printCacheStats(cacheStats);
         }
     }
+
+    private void printCacheStats(Map<CacheStatsDefinition, CacheSizeStats> cacheStats) {
+        if (null != cacheStats) {
+            for (CacheStatsDefinition statsDef : cacheStats.keySet()) {
+                CacheSizeStats stats = cacheStats.get(statsDef);
+                log.info(statsDef.toString() + " " + ((null != stats) ? stats.toString() : "null"));
+            }
+        }
+    }
+
 
     private class CacheFetchOp implements Callable<Map<CacheStatsDefinition, CacheSizeStats>> {
         private final Cache myCache;
@@ -158,6 +157,7 @@ public class cacheInspect {
             Map<CacheStatsDefinition, CacheSizeStats> cacheStats = new HashMap<CacheStatsDefinition, CacheSizeStats>();
             try {
                 List<Object> keys = myCache.getKeys();
+                log.info("Found " + keys.size() + " key(s) in cache '" + myCache.getName() + "'.");
                 int iterationLimit = 0;
                 for (Object key : keys) {
                     if (iterationLimit >= runParams.getSamplingSize()) break;
@@ -166,10 +166,8 @@ public class cacheInspect {
 
                     iterationLimit++;
                 }
-            } catch (IllegalStateException e1) {
-                log.error("", e1);
-            } catch (CacheException e1) {
-                log.error("", e1);
+            } catch (Exception e) {
+                log.error("An error occurred while getting cache keys.", e);
             }
             return cacheStats;
         }
@@ -291,8 +289,9 @@ public class cacheInspect {
         try {
             params = CliFactory.parseArgumentsUsingInstance(new AppParams(), args);
 
+            cacheInspect launcher = null;
             try {
-                cacheInspect launcher = new cacheInspect(params);
+                launcher = new cacheInspect(params);
 
                 launcher.run();
 
@@ -302,12 +301,12 @@ public class cacheInspect {
             } catch (Exception e) {
                 log.error("", e);
             } finally {
-                CacheFactory.getInstance().getCacheManager().shutdown();
+                launcher.getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);
@@ -321,6 +320,7 @@ public class cacheInspect {
         private boolean noThreading;
         private int cachePoolSize;
         private SizeOfType sizeOfType;
+        private Long taskTimeoutMillis;
 
         public AppParams() {
         }
@@ -395,5 +395,18 @@ public class cacheInspect {
         public void setSizeOfType(SizeOfType sizeOfType) {
             this.sizeOfType = sizeOfType;
         }
+
+        public Long getTaskTimeoutMillis() {
+            return taskTimeoutMillis;
+        }
+
+        @Option(longName = "taskTimeoutMillis", defaultValue = "60000")
+        public void setTaskTimeoutMillis(Long taskTimeoutMillis) {
+            this.taskTimeoutMillis = taskTimeoutMillis;
+        }
+    }
+
+    public CacheManager getCacheManager() {
+        return cacheManager;
     }
 }

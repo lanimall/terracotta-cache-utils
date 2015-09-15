@@ -30,7 +30,7 @@ public class cacheMgrConnect {
 
                 launcher.run();
 
-                System.out.println("Shutting down now...");
+                log.info("Shutting down now...");
 
                 System.exit(0);
             } catch (Exception e) {
@@ -39,9 +39,9 @@ public class cacheMgrConnect {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);
@@ -49,7 +49,7 @@ public class cacheMgrConnect {
 
     public void run() throws Exception {
         CacheManager cm = CacheFactory.getInstance().getCacheManager();
-        System.out.println(String.format("Now, waiting %d milliseconds...", runParams.getSleep()));
+        log.info(String.format("Now, waiting %d milliseconds...", runParams.getSleep()));
         Thread.sleep(runParams.getSleep());
     }
 

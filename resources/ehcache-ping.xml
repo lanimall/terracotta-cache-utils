@@ -16,10 +16,16 @@
            eternal="false"
            overflowToDisk="true"
            timeToIdleSeconds="1200"
-           timeToLiveSeconds="1200">
+           timeToLiveSeconds="1200"
+           maxEntriesLocalHeap="1000000"
+            >
     </defaultCache>
 
-    <cache name="terracottaPing" eternal="true" maxEntriesLocalHeap="1000000">
+    <cache name="terracottaPing" maxEntriesInCache="1000000" maxEntriesLocalHeap="100" timeToIdleSeconds="120">
+        <terracotta/>
+    </cache>
+
+    <cache name="stripeTest" maxEntriesInCache="1000000"  maxEntriesLocalHeap="1000" timeToIdleSeconds="300">
         <terracotta/>
     </cache>
 

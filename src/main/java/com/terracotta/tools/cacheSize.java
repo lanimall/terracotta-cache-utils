@@ -46,9 +46,9 @@ public class cacheSize {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);
@@ -58,12 +58,12 @@ public class cacheSize {
         if (runParams.getCacheNames() == null || "".equals(runParams.getCacheNames())) {
             throw new Exception("No cache name defined. Doing nothing.");
         } else {
-            System.out.println("-----------------------------------------------------------------");
-            System.out.println("Start Cache Sizes at " + new Date() + "\n");
+            log.info("-----------------------------------------------------------------");
+            log.info("Start Cache Sizes at " + new Date() + "\n");
 
             String[] cname;
             if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheNamesCSV())) {
-                System.out.println("Requested to get size for all caches...");
+                log.info("Requested to get size for all caches...");
                 cname = CacheFactory.getInstance().getCacheManager().getCacheNames();
             } else {
                 cname = runParams.getCacheNames();
@@ -72,29 +72,29 @@ public class cacheSize {
             //perform operation
             int it = 0;
             while (it < runParams.getIterationLimit()) {
-                System.out.println(String.format("---------------- Iteration %d ----------------", it + 1));
+                log.info(String.format("---------------- Iteration %d ----------------", it + 1));
                 for (int i = 0; i < cname.length; i++) {
                     Cache cache = CacheFactory.getInstance().getCacheManager().getCache(cname[i]);
                     if (null != cache) {
                         printSize(cache);
                     } else {
-                        System.out.println(String.format("Cache %s not found.", cname[i]));
+                        log.info(String.format("Cache %s not found.", cname[i]));
                     }
                 }
                 Thread.sleep(runParams.getSleep());
                 it++;
             }
 
-            System.out.println("End Cache Sizes " + new Date());
+            log.info("End Cache Sizes " + new Date());
         }
     }
 
     private void printSize(Cache cache) throws Exception {
         if (null != cache) {
             if (AppConstants.useKeyWithExpiryCheck) {
-                System.out.println(String.format("%s %d", cache.getName(), cache.getKeysWithExpiryCheck().size()));
+                log.info(String.format("%s %d", cache.getName(), cache.getKeysWithExpiryCheck().size()));
             } else {
-                System.out.println(String.format("%s %d", cache.getName(), cache.getSize()));
+                log.info(String.format("%s %d", cache.getName(), cache.getSize()));
             }
         } else {
             throw new Exception("Cache is null...doing nothing.");

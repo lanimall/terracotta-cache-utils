@@ -42,7 +42,7 @@ public class cacheSelectiveClear {
     public String[] getCacheNames() {
         String[] cname;
         if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheNamesCSV())) {
-            System.out.println("Requested to get size for all caches...");
+            log.info("Requested to get size for all caches...");
             cname = CacheFactory.getInstance().getCacheManager().getCacheNames();
         } else {
             cname = runParams.getCacheNames();
@@ -53,8 +53,8 @@ public class cacheSelectiveClear {
     public void run() {
         String[] cacheNames = getCacheNames();
 
-        System.out.println("-----------------------------------------------------------------");
-        System.out.println(String.format("Start conditional Cache Element Removal Operation - %s", dateTimeFormatter.format(new Date())));
+        log.info("-----------------------------------------------------------------");
+        log.info(String.format("Start conditional Cache Element Removal Operation - %s", dateTimeFormatter.format(new Date())));
 
         if (runParams.isUseThreading()) {
             selectiveRemoveInCache(cacheNames);
@@ -62,7 +62,7 @@ public class cacheSelectiveClear {
             selectiveRemoveInCacheSerial(cacheNames);
         }
 
-        System.out.println(String.format("End Cache Keys Print Operation - %s", dateTimeFormatter.format(new Date())));
+        log.info(String.format("End Cache Keys Print Operation - %s", dateTimeFormatter.format(new Date())));
     }
 
     public void postRun() {
@@ -80,7 +80,7 @@ public class cacheSelectiveClear {
             Future futs[] = new Future[cacheNames.length];
             int cacheCount = 0;
             for (String cacheName : cacheNames) {
-                System.out.println(String.format("Working on cache %s", cacheName));
+                log.info(String.format("Working on cache %s", cacheName));
                 Cache myCache = CacheFactory.getInstance().getCache(cacheName);
                 futs[cacheCount++] = cacheFetchService.submit(
                         new CacheOp(
@@ -108,7 +108,7 @@ public class cacheSelectiveClear {
     private void selectiveRemoveInCacheSerial(String[] cacheNames) {
         if (null != cacheNames) {
             for (String cacheName : cacheNames) {
-                System.out.println(String.format("Working on cache %s", cacheName));
+                log.info(String.format("Working on cache %s", cacheName));
                 Cache myCache = CacheFactory.getInstance().getCache(cacheName);
                 if (null != myCache) {
                     new CacheOp(
@@ -150,7 +150,7 @@ public class cacheSelectiveClear {
         public void run() {
             int removeCount = 0;
             if (null != myCache) {
-                System.out.println(String.format("Cache %s - Starting Size = %s", myCache.getName(), myCache.getSize()));
+                log.info(String.format("Cache %s - Starting Size = %s", myCache.getName(), myCache.getSize()));
 
                 List<Object> keys = myCache.getKeys();
                 int keySize = keys.size();
@@ -170,9 +170,9 @@ public class cacheSelectiveClear {
                     log.error("", e);
                 } finally {
                     shutdownAndAwaitTermination(cacheGetsPool);
-                    System.out.println("");
-                    System.out.println(String.format("Cache %s - %s entries removed", myCache.getName(), removeCount));
-                    System.out.println(String.format("Cache %s - Final Size = %s", myCache.getName(), myCache.getSize()));
+                    log.info("");
+                    log.info(String.format("Cache %s - %s entries removed", myCache.getName(), removeCount));
+                    log.info(String.format("Cache %s - Final Size = %s", myCache.getName(), myCache.getSize()));
                 }
             } else {
                 throw new IllegalArgumentException("cache is null...not able to perform any operation.");
@@ -254,9 +254,9 @@ public class cacheSelectiveClear {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);

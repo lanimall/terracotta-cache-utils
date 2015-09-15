@@ -49,9 +49,9 @@ public class cacheSerializeToDisk {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);
@@ -69,16 +69,16 @@ public class cacheSerializeToDisk {
             List cacheKeyList = null;
             if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheKeysCSV())) {
                 cacheKeyList = (AppConstants.useKeyWithExpiryCheck) ? cache.getKeysWithExpiryCheck() : cache.getKeys();
-                System.out.println(String.format("Requesting all (=%d) Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
+                log.info(String.format("Requesting all (=%d) Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
             } else {
                 cacheKeyList = Arrays.asList(runParams.getCacheKeys());
-                System.out.println(String.format("Requesting %d Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
+                log.info(String.format("Requesting %d Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
             }
 
             int savedElements = serializeAndSaveElements(cache, cacheKeyList);
 
-            System.out.println(String.format("Saved cache elements = %d", savedElements));
-            System.out.println(String.format("End Cache Save-to-Disk Operation - %s", dateTimeFormatter.format(new Date())));
+            log.info(String.format("Saved cache elements = %d", savedElements));
+            log.info(String.format("End Cache Save-to-Disk Operation - %s", dateTimeFormatter.format(new Date())));
         }
     }
 

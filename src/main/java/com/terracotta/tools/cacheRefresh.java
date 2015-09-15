@@ -42,7 +42,7 @@ public class cacheRefresh {
     public String[] getCacheNames() {
         String[] cname;
         if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheNamesCSV())) {
-            System.out.println("Requested to get size for all caches...");
+            log.info("Requested to get size for all caches...");
             cname = CacheFactory.getInstance().getCacheManager().getCacheNames();
         } else {
             cname = runParams.getCacheNames();
@@ -53,8 +53,8 @@ public class cacheRefresh {
     public void run() {
         String[] cacheNames = getCacheNames();
 
-        System.out.println("-----------------------------------------------------------------");
-        System.out.println(String.format("Start reset of Cache Elements - %s", dateTimeFormatter.format(new Date())));
+        log.info("-----------------------------------------------------------------");
+        log.info(String.format("Start reset of Cache Elements - %s", dateTimeFormatter.format(new Date())));
 
         if (runParams.isUseThreading()) {
             resetElementsInCache(cacheNames);
@@ -62,7 +62,7 @@ public class cacheRefresh {
             resetElementsInCacheSerial(cacheNames);
         }
 
-        System.out.println(String.format("End reset of Cache Elements - %s", dateTimeFormatter.format(new Date())));
+        log.info(String.format("End reset of Cache Elements - %s", dateTimeFormatter.format(new Date())));
     }
 
     public void postRun() {
@@ -80,7 +80,7 @@ public class cacheRefresh {
             Future futs[] = new Future[cacheNames.length];
             int cacheCount = 0;
             for (String cacheName : cacheNames) {
-                System.out.println(String.format("Working on cache %s", cacheName));
+                log.info(String.format("Working on cache %s", cacheName));
                 Cache myCache = CacheFactory.getInstance().getCache(cacheName);
                 futs[cacheCount++] = cacheFetchService.submit(
                         new CacheOp(myCache)
@@ -105,7 +105,7 @@ public class cacheRefresh {
     private void resetElementsInCacheSerial(String[] cacheNames) {
         if (null != cacheNames) {
             for (String cacheName : cacheNames) {
-                System.out.println(String.format("Working on cache %s", cacheName));
+                log.info(String.format("Working on cache %s", cacheName));
                 Cache myCache = CacheFactory.getInstance().getCache(cacheName);
                 if (null != myCache) {
                     new CacheOp(myCache).run();
@@ -131,7 +131,7 @@ public class cacheRefresh {
         public void run() {
             int opsCount = 0;
             if (null != myCache) {
-                System.out.println(String.format("Cache %s - Starting Size = %s", myCache.getName(), myCache.getSize()));
+                log.info(String.format("Cache %s - Starting Size = %s", myCache.getName(), myCache.getSize()));
 
                 List<Object> keys = myCache.getKeys();
                 int keySize = keys.size();
@@ -151,9 +151,9 @@ public class cacheRefresh {
                     log.error("", e);
                 } finally {
                     shutdownAndAwaitTermination(cacheGetsPool);
-                    System.out.println("");
-                    System.out.println(String.format("Cache %s - %s entries updated", myCache.getName(), opsCount));
-                    System.out.println(String.format("Cache %s - Final Size = %s", myCache.getName(), myCache.getSize()));
+                    log.info("");
+                    log.info(String.format("Cache %s - %s entries updated", myCache.getName(), opsCount));
+                    log.info(String.format("Cache %s - Final Size = %s", myCache.getName(), myCache.getSize()));
                 }
             } else {
                 throw new IllegalArgumentException("cache is null...not able to perform any operation.");
@@ -223,9 +223,9 @@ public class cacheRefresh {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);

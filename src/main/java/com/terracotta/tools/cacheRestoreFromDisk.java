@@ -51,9 +51,9 @@ public class cacheRestoreFromDisk {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);
@@ -77,8 +77,8 @@ public class cacheRestoreFromDisk {
             File file = new File(runParams.getFilePath());
             int restoredElements = restoreElementsFromFile(cache, file);
 
-            System.out.println(String.format("Restored elements in cache = %d", restoredElements));
-            System.out.println(String.format("End Cache Restore-From-Disk Operation - %s", dateTimeFormatter.format(new Date())));
+            log.info(String.format("Restored elements in cache = %d", restoredElements));
+            log.info(String.format("End Cache Restore-From-Disk Operation - %s", dateTimeFormatter.format(new Date())));
         }
     }
 
@@ -115,7 +115,7 @@ public class cacheRestoreFromDisk {
                         }
                     } catch (EOFException eof) {
                         //we're done...
-                        System.out.println("End of file detected...we're done");
+                        log.info("End of file detected...we're done");
                     }
                 } finally {
                     input.close();

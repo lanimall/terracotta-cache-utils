@@ -4,6 +4,7 @@
 # All content copyright Terracotta, Inc., unless otherwise indicated. All rights reserved.
 #
 
+<<<<<<< HEAD
 # resolve links - $0 may be a softlink
 PRG="$0"
 
@@ -29,6 +30,9 @@ if [ "x$TC_CONNECT_URL" == "x" ]; then
   echo "  We cannot execute $JAVACMD" 1>&2
   exit 1
 fi
+=======
+BASE_DIR=`dirname "$0"`/..
+>>>>>>> gbshiva/master
 
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false;
@@ -108,6 +112,12 @@ if [ -f ${TC_LICENSEKEY} ]; then
   JAVA_OPTS="${JAVA_OPTS} -Dcom.tc.productkey.path=${TC_LICENSEKEY}"
 fi
 
+<<<<<<< HEAD
+=======
+PERF_CLASSPATH=$(echo ${BASE_DIR}/lib/*.jar | tr ' ' ':')
+PERF_CLASSPATH=${PERF_CLASSPATH}:${BASE_DIR}/config/
+JAVA_OPTS="${JAVA_OPTS} -Xms128m -Xmx512m -XX:MaxDirectMemorySize=10G -Dcom.tc.productkey.path=${BASE_DIR}/config/terracotta-license.key"
+>>>>>>> gbshiva/master
 dt=`date +%Y%m%d_%H%M%S`
 
 echo

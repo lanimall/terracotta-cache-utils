@@ -33,12 +33,12 @@ public class cacheClear {
             if (runParams.getCacheKeysCSV() == null || "".equals(runParams.getCacheKeysCSV())) {
                 throw new Exception("No cache key(s) specified. Doing nothing.");
             } else {
-                System.out.println("-----------------------------------------------------------------");
-                System.out.println("Start cacheClear at " + new Date() + "\n");
+                log.info("-----------------------------------------------------------------");
+                log.info("Start cacheClear at " + new Date() + "\n");
 
                 String[] cname;
                 if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheNamesCSV())) {
-                    System.out.println("Requested to get size for all caches...");
+                    log.info("Requested to get size for all caches...");
                     cname = CacheFactory.getInstance().getCacheManager().getCacheNames();
                 } else {
                     cname = runParams.getCacheNames();
@@ -51,15 +51,15 @@ public class cacheClear {
                     if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheKeysCSV())) {
                         clearAllCacheEntries(cache);
 
-                        System.out.println("Checking cache sizes now...");
+                        log.info("Checking cache sizes now...");
                         new cacheSize(cache.getName(), 1000, CHECK_ITERATION_LIMIT_DEFAULT).run();
                     } else {
                         clearSelectedKeys(cache, runParams.getCacheKeys());
 
-                        System.out.println("Now, checking if requested keys are in cache...");
+                        log.info("Now, checking if requested keys are in cache...");
                         int it = 0;
                         while (it < CHECK_ITERATION_LIMIT_DEFAULT) {
-                            System.out.println(String.format("---------------- Iteration %d ----------------", it + 1));
+                            log.info(String.format("---------------- Iteration %d ----------------", it + 1));
                             new cachePrint(cache.getName(), runParams.getCacheKeysCSV(), runParams.getCacheKeysType().getTypeString()).run();
                             Thread.sleep(CHECK_ITERATION_SLEEP_DEFAULT);
                             it++;
@@ -73,15 +73,15 @@ public class cacheClear {
     private void clearSelectedKeys(Cache cache, Object[] keys) throws Exception {
         if (null != cache && null != keys && keys.length > 0) {
             int beforeRemoveSize = cache.getSize();
-            System.out.println(String.format("Cache %s -- Current Size = %d", cache.getName(), beforeRemoveSize));
-            System.out.println(String.format("Cache %s -- About to clear keys %s (type = %s)", cache.getName(), Arrays.deepToString(keys), runParams.getCacheKeysType().getTypeString()));
+            log.info(String.format("Cache %s -- Current Size = %d", cache.getName(), beforeRemoveSize));
+            log.info(String.format("Cache %s -- About to clear keys %s (type = %s)", cache.getName(), Arrays.deepToString(keys), runParams.getCacheKeysType().getTypeString()));
 
             List keyList = Arrays.asList(keys);
 
             //check first if requested keys are in cache currently
             List requestedKeysInCache = getKeysInCache(cache, keyList);
             if (null == requestedKeysInCache || requestedKeysInCache.size() == 0) {
-                System.out.println(String.format("Cache %s -- Requested keys are not in cache -- doing nothing. ", cache.getName(), Arrays.deepToString(keys)));
+                log.info(String.format("Cache %s -- Requested keys are not in cache -- doing nothing. ", cache.getName(), Arrays.deepToString(keys)));
                 return;
             }
 
@@ -111,8 +111,8 @@ public class cacheClear {
                 }
             }
 
-            System.out.println(String.format("Cache %s: Clearing success -- Following keys removed: %s", cache.getName(), Arrays.deepToString(keys)));
-            System.out.println("------------------------------------------------");
+            log.info(String.format("Cache %s: Clearing success -- Following keys removed: %s", cache.getName(), Arrays.deepToString(keys)));
+            log.info("------------------------------------------------");
         } else {
             throw new Exception("Cache or key is null...doing nothing.");
         }
@@ -132,10 +132,10 @@ public class cacheClear {
     private void clearAllCacheEntries(Cache cache) throws Exception {
         if (null != cache) {
             int beforeRemoveSize = cache.getSize();
-            System.out.println("Clearing cache " + cache.getName() + " - Current size:" + beforeRemoveSize);
+            log.info("Clearing cache " + cache.getName() + " - Current size:" + beforeRemoveSize);
 
             if (beforeRemoveSize == 0) {
-                System.out.println(cache.getName() + " is already empty...");
+                log.info(cache.getName() + " is already empty...");
                 return;
             }
 
@@ -153,11 +153,11 @@ public class cacheClear {
             }
 
             if (afterRemoveSize > 0) {
-                System.out.println("Cleared some entries in " + cache.getName() + "... but cache is not empty. Probably new entries were added at the same time.");
+                log.info("Cleared some entries in " + cache.getName() + "... but cache is not empty. Probably new entries were added at the same time.");
             }
 
-            System.out.println(cache.getName() + ": Final Size " + cache.getSize());
-            System.out.println("------------------------------------------------");
+            log.info(cache.getName() + ": Final Size " + cache.getSize());
+            log.info("------------------------------------------------");
         } else {
             throw new Exception("Cache is null...doing nothing.");
         }
@@ -180,9 +180,9 @@ public class cacheClear {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);

@@ -52,9 +52,9 @@ public class cachePrint {
                 CacheFactory.getInstance().getCacheManager().shutdown();
             }
         } catch (ArgumentValidationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         } catch (InvalidOptionSpecificationException e) {
-            System.out.println(e.getMessage());
+            log.info(e.getMessage());
         }
 
         System.exit(1);
@@ -72,30 +72,30 @@ public class cachePrint {
                     throw new Exception("Cache " + runParams.getCacheNames() + " not found.");
                 }
 
-                System.out.println("-----------------------------------------------------------------");
-                System.out.println(String.format("Start Cache Elements Print Operation - %s", dateTimeFormatter.format(new Date())));
+                log.info("-----------------------------------------------------------------");
+                log.info(String.format("Start Cache Elements Print Operation - %s", dateTimeFormatter.format(new Date())));
                 if (runParams.isDateTimeFilterEnabled()) {
-                    System.out.println(String.format("Date Filtering enabled. Will Print only the elements matching the filter"));
+                    log.info(String.format("Date Filtering enabled. Will Print only the elements matching the filter"));
                 }
 
                 List cacheKeyList = null;
                 if (AppConstants.PARAMS_ALL.equalsIgnoreCase(runParams.getCacheKeysCSV())) {
                     cacheKeyList = (AppConstants.useKeyWithExpiryCheck) ? cache.getKeysWithExpiryCheck() : cache.getKeys();
-                    System.out.println(String.format("Requesting all (=%d) Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
+                    log.info(String.format("Requesting all (=%d) Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
                 } else {
                     cacheKeyList = Arrays.asList(runParams.getCacheKeys());
-                    System.out.println(String.format("Requesting %d Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
+                    log.info(String.format("Requesting %d Keys (type=%s) in cache %s", cacheKeyList.size(), runParams.getCacheKeysType().getTypeString(), cache.getName()));
                 }
 
                 int keyInCacheCount = printElements(cache, cacheKeyList);
 
                 if (runParams.isDateTimeFilterEnabled()) {
-                    System.out.println(String.format("Date Filtering enabled. Printed only the elements matching the filter = %d", keyInCacheCount));
+                    log.info(String.format("Date Filtering enabled. Printed only the elements matching the filter = %d", keyInCacheCount));
                 } else {
-                    System.out.println(String.format("Keys found in cache = %d", keyInCacheCount));
+                    log.info(String.format("Keys found in cache = %d", keyInCacheCount));
                 }
 
-                System.out.println(String.format("End Cache Keys Print Operation - %s", dateTimeFormatter.format(new Date())));
+                log.info(String.format("End Cache Keys Print Operation - %s", dateTimeFormatter.format(new Date())));
             }
         }
     }
@@ -103,7 +103,7 @@ public class cachePrint {
     private int printElements(final Cache cache, final List cacheKeysList) throws Exception {
         int keyInCacheCount = 0;
         if (null != cache) {
-            System.out.println("---------- CSV Output -----------");
+            log.info("---------- CSV Output -----------");
 
             StringWriter sw = new StringWriter();
 
@@ -124,7 +124,7 @@ public class cachePrint {
             if (runParams.isPrintValue())
                 sw.append(",").append("value");
 
-            System.out.println(sw.toString());
+            log.info(sw.toString());
 
             Iterator iterator = cacheKeysList.iterator();
             while (iterator.hasNext()) {
@@ -134,10 +134,10 @@ public class cachePrint {
                 keyInCacheCount += printSingleElement(cache, key, sw);
 
                 if (sw.getBuffer().length() > 0)
-                    System.out.println(sw.toString());
+                    log.info(sw.toString());
             }
 
-            System.out.println("---------- End CSV Output -----------");
+            log.info("---------- End CSV Output -----------");
         } else {
             throw new Exception("Cache is null...doing nothing.");
         }
