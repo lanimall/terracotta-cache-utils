@@ -1,11 +1,11 @@
-ehcache-tools
-=============
+terracotta-cache-utils
+======================
 
-Operations tool set for terracotta / ehcache. 
+Operations tool set for Terracotta via ehcache. 
 
 This package contains handy tools to help operate teams to answer typical queries like
 1. How many objects are in my cache?
-2. Print all keys( strings )  and possible values ( strings)
+2. Print all keys(strings) and possible values (strings)
 3. Can you check if this business key exists.
 
 

@@ -23,18 +23,6 @@
 
     <developers>
         <developer>
-            <id>gbshiva</id>
-            <name>Shivakumar Gokaram</name>
-            <email>sgokaram@terracottatech.com</email>
-            <url>http://www.terracotta.org</url>
-            <organization>Terracotta, Inc.</organization>
-            <organizationUrl>http://www.terracotta.org</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-6</timezone>
-        </developer>
-        <developer>
             <id>fsanglie</id>
             <name>Fabien Sanglier</name>
             <email>fsanglie@terracottatech.com</email>
